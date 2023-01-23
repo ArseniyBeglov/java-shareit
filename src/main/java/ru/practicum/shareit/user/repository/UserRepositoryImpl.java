@@ -3,7 +3,6 @@ package ru.practicum.shareit.user.repository;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ServerException;
-import ru.practicum.shareit.exception.ValidateException;
 import ru.practicum.shareit.user.User;
 
 import java.util.*;

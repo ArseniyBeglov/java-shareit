@@ -29,10 +29,11 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e){
+    public ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
         log.info("400 {}", e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleNoSuchUserException(NotFoundException e) {
