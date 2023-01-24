@@ -4,6 +4,7 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ServerException;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.*;
 
@@ -34,18 +35,20 @@ public class UserRepositoryImpl implements UserRepository {
 
 
     @Override
-    public User update(User user) {
-        if (users.containsKey(user.getId())) {
-            String firstEmail = users.get(user.getId()).getEmail();
-            String secondEmail = user.getEmail();
-            if (!firstEmail.equals(secondEmail)) {
-                emailChecking(secondEmail);
-                emails.remove(firstEmail);
-                emails.add(secondEmail);
+    public User update(UserDto userDto, User user) {
+        if (userDto.getName() != null && !userDto.getName().isBlank()) {
+            user.setName(userDto.getName());
+        }
+        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
+            if (!user.getEmail().equals(userDto.getEmail())) {
+                if (emails.contains(userDto.getEmail())) {
+                    throw new ServerException("This email has been registered");
+                }
+                emails.remove(user.getEmail());
+                emails.add(userDto.getEmail());
             }
+            user.setEmail(userDto.getEmail());
             users.replace(user.getId(), user);
-        } else {
-            throw new NotFoundException("User with id is not found");
         }
         return user;
     }

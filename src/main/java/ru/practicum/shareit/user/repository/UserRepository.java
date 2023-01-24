@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user.repository;
 
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.*;
 
@@ -11,7 +12,7 @@ public interface UserRepository {
 
     User save(User user);
 
-    User update(User user);
+    User update(UserDto userDto, User user);
 
     void deleteById(long id);
 

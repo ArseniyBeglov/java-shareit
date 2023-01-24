@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
@@ -27,7 +28,7 @@ public class ItemController {
 
     @GetMapping("/search")
     public List<ItemDto> findByText(@RequestParam String text) {
-        if (text.isBlank()) {
+        if (!StringUtils.hasText(text)) {
             return List.of();
         } else {
             return itemService.getByText(text);
