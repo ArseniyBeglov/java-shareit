@@ -1,28 +1,35 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.user.User;
 
+import javax.persistence.*;
 import java.util.Objects;
 
-@Data
+@Entity
+@Table(name = "items")
+@Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class Item {
-    private long id;
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "name")
     private String name;
+    @Column(name = "description")
     private String description;
+    @Column(name = "is_available")
     private Boolean available;
-    private long owner;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "owner_id")
+    private User owner;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "request_id")
     private ItemRequest request;
-
-    public Item(long id, String name, String description, boolean available, long owner) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.available = available;
-        this.owner = owner;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -35,5 +42,17 @@ public class Item {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", available=" + available +
+                ", owner=" + owner +
+                ", request=" + request +
+                '}';
     }
 }
