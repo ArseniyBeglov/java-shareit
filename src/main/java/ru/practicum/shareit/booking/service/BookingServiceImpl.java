@@ -1,7 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.State;
@@ -23,7 +22,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
@@ -34,7 +32,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDtoOutput create(long userId, BookingDtoInput bookingDto) {
-        log.debug("Request POST to /bookings");
         if (!bookingDto.getStart().isBefore(bookingDto.getEnd())) {
             throw new TimeException("Item is not availibal in this time");
         }
@@ -63,7 +60,6 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingDtoOutput updateStatusOfBooking(long sharerId, long id, boolean approved) {
-        log.debug("Request PATCH to /bookings/{}", id);
         Booking booking = bookingRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("Booking with this id is not found")
         );
@@ -86,12 +82,12 @@ public class BookingServiceImpl implements BookingService {
         }
         booking.setStatus(status);
 
+        bookingRepository.save(booking);
         return bookingMapper.toOutputDto(booking);
     }
 
     @Override
     public BookingDtoOutput getById(long userId, long id) {
-        log.debug("Request GET to /bookings/{}", id);
         Booking booking = bookingRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("Booking with this id not found")
         );
@@ -108,22 +104,18 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDtoOutput> getAllByUser(long userId, State state) {
-        log.debug("Request GET to /bookings");
-        userRepository.findById(userId).orElseThrow(() ->
-                new NotFoundException("User with this id is not found")
-        );
-
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User with this id is not found");
+        }
         return sortByState(state, userId, "user").stream().map(bookingMapper::toOutputDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<BookingDtoOutput> getAllByOwner(long ownerId, State state) {
-        log.debug("Request GET to /bookings/owner");
-        userRepository.findById(ownerId).orElseThrow(() ->
-                new NotFoundException("User with this id is not found")
-        );
-
+        if (!userRepository.existsById(ownerId)) {
+            throw new NotFoundException("User with this id is not found");
+        }
         return sortByState(state, ownerId, "owner").stream().map(bookingMapper::toOutputDto)
                 .collect(Collectors.toList());
     }

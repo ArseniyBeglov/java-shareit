@@ -60,11 +60,11 @@ public class ItemServiceImpl implements ItemService {
         Map<Item, List<Comment>> commentsByItem = comments.stream()
                 .collect(groupingBy(Comment::getItem, toList()));
 
-        List<Booking> lastBookings = bookingRepository.findByItem_IdInAndStartBeforeOrderByEndDesc(itemsId);
+        List<Booking> lastBookings = bookingRepository.findLastBookings(itemsId);
         Map<Item, List<Booking>> bookingsByItem = lastBookings.stream()
                 .collect(groupingBy(Booking::getItem, toList()));
 
-        List<Booking> nextBookings = bookingRepository.findByItem_IdInAndStartAfterOrderByEndAsc(itemsId);
+        List<Booking> nextBookings = bookingRepository.findNextBookings(itemsId);
         Map<Item, List<Booking>> bookingsByItem2 = nextBookings.stream()
                 .collect(groupingBy(Booking::getItem, toList()));
 

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.State;
 
 @Component
-public class StringMapper implements Converter<String, State> {
+public class StateMapper implements Converter<String, State> {
 
     @Override
     public State convert(String source) {

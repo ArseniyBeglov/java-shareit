@@ -45,9 +45,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query(value = "select book from Booking as book where book.item.id in ?1 and book.status = 'APPROVED'" +
             " and book.start <= current_timestamp order by book.end desc")
-    List<Booking> findByItem_IdInAndStartBeforeOrderByEndDesc(Set<Long> itemsId);
+    List<Booking> findLastBookings(Set<Long> itemsId);
 
     @Query(value = "select book from Booking as book where book.item.id in ?1 and book.status = 'APPROVED'" +
             " and book.start > current_timestamp order by book.end asc")
-    List<Booking> findByItem_IdInAndStartAfterOrderByEndAsc(Set<Long> itemsId);
+    List<Booking> findNextBookings(Set<Long> itemsId);
 }
