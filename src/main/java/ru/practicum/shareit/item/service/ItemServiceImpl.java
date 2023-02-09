@@ -3,13 +3,14 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingIdAndBookerId;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.CommentAccessException;
-import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.booking.model.exception.CommentAccessException;
+import ru.practicum.shareit.booking.model.exception.NotFoundException;
 import ru.practicum.shareit.item.comments.Comment;
 import ru.practicum.shareit.item.comments.CommentDto;
 import ru.practicum.shareit.item.comments.CommentMapper;
@@ -20,6 +21,8 @@ import ru.practicum.shareit.item.dto.ItemDtoInput;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -45,15 +48,17 @@ public class ItemServiceImpl implements ItemService {
     private final ItemMapper itemMapper;
     private final CommentMapper commentMapper;
     private final BookingMapper bookingMapper;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
-    public List<ItemDtoBookingAndComments> getAll(long sharerId) {
+    public List<ItemDtoBookingAndComments> getAll(long sharerId, int from, int size) {
         log.debug("Request GET to /items");
         userRepository.findById(sharerId)
                 .orElseThrow(() ->
                         new NotFoundException("User with id = " + sharerId + " is not found"));
 
-        List<Item> items = itemRepository.findAllByOwner_Id_OrderByIdAsc(sharerId);
+        List<Item> items = itemRepository.findAllByOwner_Id_OrderByIdAsc(sharerId,
+                PageRequest.of(from / size, size));
         List<ItemDtoBookingAndComments> itemDtoWithBookingAndComments = new ArrayList<>();
         Set<Long> itemsId = items.stream().map(Item::getId).collect(Collectors.toSet());
         List<Comment> comments = commentRepository.findByItem_IdIn(itemsId);
@@ -88,9 +93,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getByText(String text) {
+    public List<ItemDto> getByText(String text, int from, int size) {
         log.debug("Request GET to /items/search?text={}", text);
-        return itemRepository.findByText(text)
+        return itemRepository.findByText(text, PageRequest.of(from / size, size))
                 .stream()
                 .map(itemMapper::toDto)
                 .collect(toList());
@@ -103,7 +108,15 @@ public class ItemServiceImpl implements ItemService {
         User owner = userRepository.findById(sharerId)
                 .orElseThrow(() ->
                         new NotFoundException("User with id = " + sharerId + " is not found"));
-        Item item = itemMapper.fromDtoInput(itemDto, owner);
+        Long requestId = itemDto.getRequestId();
+        ItemRequest itemRequest = null;
+
+        if (requestId != null) {
+            itemRequest = itemRequestRepository.findById(requestId)
+                    .orElseThrow(() ->
+                            new NotFoundException("This itemRequest not be found"));
+        }
+        Item item = itemMapper.fromDtoInput(itemDto, owner, itemRequest);
         item.setOwner(owner);
 
         return itemMapper.toDto(itemRepository.save(item));
@@ -131,6 +144,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void deleteById(long sharerId, long id) {
         log.debug("Request DELETE to /items/{}", id);
+        if(!itemRepository.existsById(id) || !userRepository.existsById(sharerId)){
+            throw new NotFoundException("user or item id is not correct");
+        }
         itemRepository.deleteById(id);
     }
 

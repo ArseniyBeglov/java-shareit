@@ -1,4 +1,4 @@
-package ru.practicum.shareit.exception;
+package ru.practicum.shareit.booking.model.exception;
 
 public class ValidateException extends RuntimeException {
     public ValidateException(String message) {

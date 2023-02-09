@@ -1,4 +1,4 @@
-package ru.practicum.shareit.exception;
+package ru.practicum.shareit.booking.model.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

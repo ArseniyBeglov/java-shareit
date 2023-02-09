@@ -23,17 +23,11 @@ public class ItemRequest {
     @Column(name = "description")
     private String description;
 
-    public ItemRequest(Long id, String description, User requestor) {
-        this.id = id;
-        this.description = description;
-        this.requestor = requestor;
-    }
-
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "requestor_id")
     private User requestor;
 
-    @Transient
+    @Column(name = "created")
     private LocalDateTime created;
 
     @Override
