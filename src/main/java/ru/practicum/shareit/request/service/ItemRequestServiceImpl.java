@@ -29,7 +29,7 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
-public class ItemRequestServiceImpl implements ItemRequestService{
+public class ItemRequestServiceImpl implements ItemRequestService {
 
     private final ItemRequestRepository itemRequestRepository;
     private final UserRepository userRepository;
@@ -39,7 +39,7 @@ public class ItemRequestServiceImpl implements ItemRequestService{
 
     @Override
     public List<ItemRequestOutput> getAll(long requestorId) {
-        if(!userRepository.existsById(requestorId)){
+        if (!userRepository.existsById(requestorId)) {
             throw new NotFoundException("User with id = " + requestorId + " not found");
         }
         List<ItemRequest> requests = itemRequestRepository.findByRequestor_Id(requestorId);
@@ -49,10 +49,10 @@ public class ItemRequestServiceImpl implements ItemRequestService{
 
     @Override
     public ItemRequestOutput getById(long userId, long requestId) {
-        if(!userRepository.existsById(userId)){
+        if (!userRepository.existsById(userId)) {
             throw new NotFoundException("User with id = " + userId + " not found");
         }
-        if(!itemRequestRepository.existsById(requestId)){
+        if (!itemRequestRepository.existsById(requestId)) {
             throw new NotFoundException("Request with id = " + requestId + " not found");
         }
         ItemRequest itemRequest = itemRequestRepository.findById(requestId).get();
@@ -72,12 +72,12 @@ public class ItemRequestServiceImpl implements ItemRequestService{
     }
 
     @Override
-    public ItemRequestOutput create(long requestorId, ItemRequestDto ItemRequestDto) {
-        if(!userRepository.existsById(requestorId)){
+    public ItemRequestOutput create(long requestorId, ItemRequestDto itemRequestDto) {
+        if (!userRepository.existsById(requestorId)) {
             throw new NotFoundException("User with id = " + requestorId + " not found");
         }
         User owner = userRepository.findById(requestorId).get();
-        ItemRequest itemRequest = itemRequestDtoMapper.fromDtoInput(ItemRequestDto, owner);
+        ItemRequest itemRequest = itemRequestDtoMapper.fromDtoInput(itemRequestDto, owner);
         itemRequestRepository.save(itemRequest);
 
         return itemRequestDtoMapper.toDtoOutput(itemRequest, null);
@@ -90,16 +90,16 @@ public class ItemRequestServiceImpl implements ItemRequestService{
         List<Item> items = itemRepository.findByRequest_IdIn(requestsId);
         Map<ItemRequest, List<Item>> itemRequestsByItem = items.stream()
                 .collect(groupingBy(Item::getRequest, toList()));
-        List<ItemRequestOutput> ItemRequestOutputs = new ArrayList<>();
+        List<ItemRequestOutput> itemRequestOutputs = new ArrayList<>();
 
         for (ItemRequest itemRequest : requests) {
             List<Item> itemsTemp = itemRequestsByItem.getOrDefault(itemRequest, new ArrayList<>());
             List<ItemDtoRequests> itemDtoForRequests = itemsTemp.stream()
                     .map(ItemMapperImpl::toDtoForRequest)
                     .collect(toList());
-            ItemRequestOutputs.add(itemRequestDtoMapper.toDtoOutput(itemRequest, itemDtoForRequests));
+            itemRequestOutputs.add(itemRequestDtoMapper.toDtoOutput(itemRequest, itemDtoForRequests));
         }
 
-        return ItemRequestOutputs;
+        return itemRequestOutputs;
     }
 }

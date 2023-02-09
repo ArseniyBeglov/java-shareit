@@ -109,7 +109,7 @@ public class BookingServiceImpl implements BookingService {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("User with this id is not found");
         }
-        if(from<0 || size<=0){
+        if (from < 0 || size <= 0) {
             throw new ValidateException("not positive");
         }
         return sortByState(state, userId, "user", from, size).stream().map(bookingMapper::toOutputDto)
@@ -121,7 +121,7 @@ public class BookingServiceImpl implements BookingService {
         if (!userRepository.existsById(ownerId)) {
             throw new NotFoundException("User with this id is not found");
         }
-        if(from<0 || size<=0){
+        if (from < 0 || size <= 0) {
             throw new ValidateException("not positive");
         }
         return sortByState(state, ownerId, "owner", from, size).stream().map(bookingMapper::toOutputDto)
@@ -135,27 +135,27 @@ public class BookingServiceImpl implements BookingService {
         if (person.equals("owner")) {
             switch (state) {
                 case ALL:
-                    bookings = bookingRepository.findBookingsByItem_Owner_Id(id, pageable );
+                    bookings = bookingRepository.findBookingsByItem_Owner_Id(id, pageable);
                     break;
                 case CURRENT:
                     bookings = bookingRepository.findBookingsByItem_Owner_IdAndStartBeforeAndEndAfter(id,
-                            pageable , LocalDateTime.now(), LocalDateTime.now());
+                            pageable, LocalDateTime.now(), LocalDateTime.now());
                     break;
                 case PAST:
                     bookings = bookingRepository.findBookingsByItem_Owner_IdAndEndBefore(id,
-                            pageable , LocalDateTime.now());
+                            pageable, LocalDateTime.now());
                     break;
                 case FUTURE:
                     bookings = bookingRepository.findBookingsByItem_Owner_IdAndStartAfter(id,
-                            pageable , LocalDateTime.now());
+                            pageable, LocalDateTime.now());
                     break;
                 case WAITING:
                     bookings = bookingRepository.findBookingsByItem_Owner_IdAndStatus(id,
-                            pageable , Status.WAITING);
+                            pageable, Status.WAITING);
                     break;
                 case REJECTED:
                     bookings = bookingRepository.findBookingsByItem_Owner_IdAndStatus(id,
-                            pageable , Status.REJECTED);
+                            pageable, Status.REJECTED);
                     break;
                 default:
                     throw new UnknownStateException();
@@ -163,27 +163,27 @@ public class BookingServiceImpl implements BookingService {
         } else {
             switch (state) {
                 case ALL:
-                    bookings = bookingRepository.findBookingsByBooker_Id(id, pageable );
+                    bookings = bookingRepository.findBookingsByBooker_Id(id, pageable);
                     break;
                 case CURRENT:
                     bookings = bookingRepository.findBookingsByBooker_IdAndStartBeforeAndEndAfter(id,
-                            pageable , LocalDateTime.now(), LocalDateTime.now());
+                            pageable, LocalDateTime.now(), LocalDateTime.now());
                     break;
                 case PAST:
                     bookings = bookingRepository.findBookingsByBooker_IdAndEndBefore(id,
-                            pageable , LocalDateTime.now());
+                            pageable, LocalDateTime.now());
                     break;
                 case FUTURE:
                     bookings = bookingRepository.findBookingsByBooker_IdAndStartAfter(id,
-                            pageable , LocalDateTime.now());
+                            pageable, LocalDateTime.now());
                     break;
                 case WAITING:
                     bookings = bookingRepository.findBookingsByBooker_IdAndStatus(id,
-                            pageable , Status.WAITING);
+                            pageable, Status.WAITING);
                     break;
                 case REJECTED:
                     bookings = bookingRepository.findBookingsByBooker_IdAndStatus(id,
-                            pageable , Status.REJECTED);
+                            pageable, Status.REJECTED);
                     break;
                 default:
                     throw new UnknownStateException();

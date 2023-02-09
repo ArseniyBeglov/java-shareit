@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface ItemMapper {
     ItemDto toDto(Item item);
+
     Item fromDtoInput(ItemDtoInput itemDto, User owner, ItemRequest itemRequest);
 
     ItemDtoBookingAndComments toDtoWithBookingAndComments(Item item,

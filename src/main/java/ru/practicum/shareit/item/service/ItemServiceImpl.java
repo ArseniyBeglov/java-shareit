@@ -144,7 +144,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void deleteById(long sharerId, long id) {
         log.debug("Request DELETE to /items/{}", id);
-        if(!itemRepository.existsById(id) || !userRepository.existsById(sharerId)){
+        if (!itemRepository.existsById(id) || !userRepository.existsById(sharerId)) {
             throw new NotFoundException("user or item id is not correct");
         }
         itemRepository.deleteById(id);

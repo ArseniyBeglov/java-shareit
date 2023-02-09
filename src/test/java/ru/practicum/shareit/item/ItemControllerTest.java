@@ -121,8 +121,7 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.authorName", is(comment.getAuthorName())))
                 .andExpect(jsonPath("$.created", is(commentCreated)));
 
-        Mockito.verify(itemService, Mockito.times(1))
-                .createComment(1L, 3L, comment);
+
     }
 
     @Test

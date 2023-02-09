@@ -5,9 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
-import ru.practicum.shareit.booking.dto.BookingDtoInput;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.io.IOException;
@@ -24,7 +21,7 @@ class ItemRequestDtoInputTest {
     @Test
     void serialization() throws IOException {
         UserDto user = new UserDto(1L, "nam", "man@yandex.ru");
-        ItemRequestDto request= new ItemRequestDto(
+        ItemRequestDto request = new ItemRequestDto(
                 1L,
                 "I want it",
                 user.getId(),

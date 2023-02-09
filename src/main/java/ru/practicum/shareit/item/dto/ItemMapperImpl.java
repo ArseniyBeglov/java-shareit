@@ -38,20 +38,21 @@ public class ItemMapperImpl implements ItemMapper {
 
     @Override
     public ItemDtoBookingAndComments toDtoWithBookingAndComments(Item item,
-                                                                     BookingIdAndBookerId lastBooking,
-                                                                     BookingIdAndBookerId nextBooking,
-                                                                     List<CommentDto> comments) {
+                                                                 BookingIdAndBookerId lastBooking,
+                                                                 BookingIdAndBookerId nextBooking,
+                                                                 List<CommentDto> comments) {
         return new ItemDtoBookingAndComments(item.getId(), item.getName(),
                 item.getDescription(), item.getAvailable(),
                 lastBooking, nextBooking, comments);
     }
 
     @Override
-    public  List<ItemDtoRequests> toDtoListForRequest(List<Item> items) {
+    public List<ItemDtoRequests> toDtoListForRequest(List<Item> items) {
         return items.stream()
                 .map(ItemMapperImpl::toDtoForRequest)
                 .collect(Collectors.toList());
     }
+
     public static ItemDtoRequests toDtoForRequest(Item item) {
         return new ItemDtoRequests(item.getId(), item.getName(),
                 item.getDescription(), item.getAvailable(), item.getRequest().getId());
