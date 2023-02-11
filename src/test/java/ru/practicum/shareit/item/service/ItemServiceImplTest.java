@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingIdAndBookerId;
 import ru.practicum.shareit.booking.model.Booking;
@@ -30,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.lenient;
@@ -83,7 +85,21 @@ class ItemServiceImplTest {
     @InjectMocks
     private ItemServiceImpl itemService;
 
+    @Test
+    void create_shouldSuccess() {
+        Mockito
+                .when(mockUserRepository.findById(userOleg.getId()))
+                .thenReturn(Optional.of(userOleg));
+        Mockito
+                .when(mockItemRequestRepository.findById(dryerDto.getRequestId()))
+                .thenReturn(Optional.of(request));
+        Mockito
+                .when(mockItemRepository.save(any(Item.class)))
+                .thenReturn(dryer);
+        ItemDto actual = itemService.create(userOleg.getId(), dryerDtoInput);
 
+        assertEquals(dryerDto, actual);
+    }
 
     @Test
     void create_shouldThrowExceptionIfUserNotExist() {
@@ -108,7 +124,30 @@ class ItemServiceImplTest {
                 () -> itemService.create(userOleg.getId(), dryerDtoInput));
     }
 
+    @Test
+    void getById_shouldSuccess() {
+        Mockito
+                .when(mockItemRepository.findById(dryer.getId()))
+                .thenReturn(Optional.of(dryer));
+        Mockito
+                .when(mockUserRepository.findById(userIrina.getId()))
+                .thenReturn(Optional.of(userIrina));
+        Mockito
+                .when(mockBookingRepository.findFirstByItem_IdAndStartBeforeOrderByEndDesc(
+                        eq(dryer.getId()),
+                        any(LocalDateTime.class)))
+                .thenReturn(Optional.of(lastBooking));
+        Mockito
+                .when(mockBookingRepository.findFirstByItem_IdAndStartAfterOrderByEndDesc(
+                        eq(dryer.getId()),
+                        any(LocalDateTime.class)))
+                .thenReturn(Optional.of(nextBooking));
 
+        ItemDtoBookingAndComments actual = itemService.getById(
+                userIrina.getId(), dryer.getId());
+
+        assertEquals(dryerDtoWithBookingsAndComments, actual);
+    }
 
 
     @Test
@@ -135,9 +174,222 @@ class ItemServiceImplTest {
         );
     }
 
+    @Test
+    void getById_shouldReturnWithBookingsAndCommentsIfUserIsOwner() {
+        ItemDtoBookingAndComments expected = new ItemDtoBookingAndComments(
+                dryer.getId(),
+                dryer.getName(),
+                dryer.getDescription(),
+                dryer.getAvailable(),
+                lastBookingShort, nextBookingShort, new ArrayList<>()
+        );
+        lenient()
+                .when(mockUserRepository.findById(userIrina.getId()))
+                .thenReturn(Optional.of(userIrina));
+        Mockito
+                .when(mockItemRepository.findById(dryer.getId())).thenReturn(Optional.of(dryer));
+        Mockito
+                .when(mockBookingRepository.findFirstByItem_IdAndStartBeforeOrderByEndDesc(
+                        eq(dryer.getId()),
+                        any(LocalDateTime.class)))
+                .thenReturn(Optional.of(lastBooking));
+        Mockito
+                .when(mockBookingRepository.findFirstByItem_IdAndStartAfterOrderByEndDesc(
+                        eq(dryer.getId()),
+                        any(LocalDateTime.class)))
+                .thenReturn(Optional.of(nextBooking));
+        Mockito
+                .when(mockCommentRepository.findByItem_Id(dryer.getId()))
+                .thenReturn(Collections.emptyList());
 
+        ItemDtoBookingAndComments actual = itemService.getById(
+                userIrina.getId(), dryer.getId()
+        );
 
+        assertEquals(expected, actual);
+    }
 
+    @Test
+    void getById_shouldReturnWithBookingsAndCommentsIfUserIsNotOwner() {
+        ItemDtoBookingAndComments expected = new ItemDtoBookingAndComments(
+                dryer.getId(),
+                dryer.getName(),
+                dryer.getDescription(),
+                dryer.getAvailable(),
+                null,
+                null,
+                new ArrayList<>()
+        );
+        lenient()
+                .when(mockUserRepository.findById(userOleg.getId()))
+                .thenReturn(Optional.of(userOleg));
+        Mockito
+                .when(mockItemRepository.findById(dryer.getId()))
+                .thenReturn(Optional.of(dryer));
+        Mockito
+                .when(mockCommentRepository.findByItem_Id(dryer.getId()))
+                .thenReturn(Collections.emptyList());
+        ItemDtoBookingAndComments actual = itemService.getById(
+                userOleg.getId(), dryer.getId()
+        );
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void getAll_shouldSuccess() {
+        Mockito
+                .when(mockItemRepository.findAllByOwner_Id_OrderByIdAsc(userIrina.getId(), PageRequest.of(0, 1)))
+                .thenReturn(List.of(dryer));
+        Mockito
+                .when(mockUserRepository.findById(userIrina.getId()))
+                .thenReturn(Optional.of(userIrina));
+        lenient()
+                .when(mockBookingRepository.findLastBookings(itemIds))
+                .thenReturn(List.of(lastBooking, nextBooking));
+        ItemDtoBookingAndComments expected = new ItemDtoBookingAndComments(
+                dryer.getId(),
+                dryer.getName(),
+                dryer.getDescription(),
+                dryer.getAvailable(),
+                null,
+                null,
+                null
+        );
+        List<ItemDtoBookingAndComments> actual = itemService.getAll(userIrina.getId(), 0, 1);
+
+        assertEquals(List.of(expected), actual);
+    }
+
+    @Test
+    void getAll_shouldSuccessIfCommentSizeNotNull() {
+        Mockito
+                .when(mockItemRepository.findAllByOwner_Id_OrderByIdAsc(userIrina.getId(), PageRequest.of(0, 1)))
+                .thenReturn(List.of(dryer));
+        Mockito
+                .when(mockUserRepository.findById(userIrina.getId()))
+                .thenReturn(Optional.of(userIrina));
+        lenient()
+                .when(mockBookingRepository.findLastBookings(itemIds))
+                .thenReturn(List.of(lastBooking, nextBooking));
+        Mockito
+                .when(mockCommentRepository.findByItem_IdIn(anySet()))
+                .thenReturn(List.of(comment));
+        ItemDtoBookingAndComments expected = new ItemDtoBookingAndComments(
+                dryer.getId(),
+                dryer.getName(),
+                dryer.getDescription(),
+                dryer.getAvailable(),
+                null,
+                null,
+                List.of(commentDto)
+        );
+        List<ItemDtoBookingAndComments> actual = itemService.getAll(userIrina.getId(), 0, 1);
+        ItemDtoBookingAndComments act = actual.get(0);
+        assertEquals(act.getId(), expected.getId());
+        assertEquals(act.getName(), expected.getName());
+        assertEquals(act.getDescription(), expected.getDescription());
+        assertEquals(act.getAvailable(), expected.getAvailable());
+        assertEquals(act.getLastBooking(), expected.getLastBooking());
+        assertEquals(act.getNextBooking(), expected.getNextBooking());
+    }
+
+    @Test
+    void getAll_shouldSuccessIfBookingsByItemNotNull() {
+        Mockito
+                .when(mockItemRepository.findAllByOwner_Id_OrderByIdAsc(userIrina.getId(), PageRequest.of(0, 1)))
+                .thenReturn(List.of(dryer));
+        Mockito
+                .when(mockUserRepository.findById(userIrina.getId()))
+                .thenReturn(Optional.of(userIrina));
+        lenient()
+                .when(mockBookingRepository.findLastBookings(itemIds))
+                .thenReturn(List.of(lastBooking, nextBooking));
+        Mockito
+                .when(mockCommentRepository.findByItem_IdIn(anySet()))
+                .thenReturn(List.of(comment));
+        Mockito
+                .when(mockBookingRepository.findLastBookings(anySet()))
+                .thenReturn(List.of(lastBooking));
+        Mockito
+                .when(mockBookingRepository.findNextBookings(anySet()))
+                .thenReturn(List.of(nextBooking));
+        ItemDtoBookingAndComments expected = new ItemDtoBookingAndComments(
+                dryer.getId(),
+                dryer.getName(),
+                dryer.getDescription(),
+                dryer.getAvailable(),
+                lastBookingShort,
+                nextBookingShort,
+                List.of(commentDto)
+        );
+        List<ItemDtoBookingAndComments> actual = itemService.getAll(userIrina.getId(), 0, 1);
+        ItemDtoBookingAndComments act = actual.get(0);
+        assertEquals(act.getId(), expected.getId());
+        assertEquals(act.getName(), expected.getName());
+        assertEquals(act.getDescription(), expected.getDescription());
+        assertEquals(act.getAvailable(), expected.getAvailable());
+        assertEquals(act.getLastBooking(), expected.getLastBooking());
+        assertEquals(act.getNextBooking(), expected.getNextBooking());
+    }
+
+    @Test
+    void update_shouldSuccess() {
+        Item item = new Item(5L, "Bicycle", "With one wheel",
+                true, userOleg, null);
+        ItemDto itemUpdate = new ItemDto(item.getId(),
+                "Tandem", "With three wheels",
+                false, userDtoOleg, null);
+        ItemDto expected = new ItemDto(
+                item.getId(),
+                itemUpdate.getName(),
+                itemUpdate.getDescription(),
+                itemUpdate.getAvailable(),
+                itemUpdate.getOwner(),
+                null
+        );
+        Mockito
+                .when(mockItemRepository.findById(item.getId()))
+                .thenReturn(Optional.of(item));
+        lenient()
+                .when(mockItemRepository.save(item))
+                .thenReturn(item);
+        Mockito
+                .when(mockUserRepository.findById(userOleg.getId()))
+                .thenReturn(Optional.of(userOleg));
+        ItemDto actual = itemService.update(userOleg.getId(), item.getId(), itemUpdate);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void updateWithNulls_shouldSuccess() {
+        Item item = new Item(5L, "Bicycle", "With one wheel",
+                true, userOleg, null);
+        ItemDto itemUpdate = new ItemDto(item.getId(),
+                null, null, null,
+                userDtoOleg, null);
+        ItemDto expected = new ItemDto(
+                item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.getAvailable(),
+                itemUpdate.getOwner(),
+                null
+        );
+        Mockito
+                .when(mockItemRepository.findById(item.getId()))
+                .thenReturn(Optional.of(item));
+        lenient()
+                .when(mockItemRepository.save(item))
+                .thenReturn(item);
+        Mockito
+                .when(mockUserRepository.findById(userOleg.getId()))
+                .thenReturn(Optional.of(userOleg));
+        ItemDto actual = itemService.update(userOleg.getId(), item.getId(), itemUpdate);
+
+        assertEquals(expected, actual);
+    }
 
     @Test
     void update_shouldThrowExceptionIfUserIsNotOwner() {
@@ -173,7 +425,6 @@ class ItemServiceImplTest {
     }
 
 
-
     @Test
     void delete_shouldThrowExceptionIfItemNotExist() {
         lenient()
@@ -206,6 +457,46 @@ class ItemServiceImplTest {
                 .deleteAll();
     }
 
+    @Test
+    void getByText_ShouldSuccess() {
+        Mockito
+                .when(mockItemRepository.findByText("Dryer", PageRequest.of(0, 1)))
+                .thenReturn(List.of(dryer));
+        List<ItemDto> actual = itemService.getByText("Dryer", 0, 1);
+
+        assertEquals(List.of(dryerDto), actual);
+    }
+
+    @Test
+    void getByTextIfBlank_ShouldSuccess() {
+        List<ItemDto> actual = itemService.getByText("", 0, 1);
+
+        assertEquals(Collections.emptyList(), actual);
+    }
+
+    @Test
+    void createComment_shouldSuccess() {
+        Mockito
+                .when(mockItemRepository.findById(dryer.getId()))
+                .thenReturn(Optional.of(dryer));
+        Mockito
+                .when(mockUserRepository.findById(userOleg.getId()))
+                .thenReturn(Optional.of(userOleg));
+        Mockito
+                .when(mockBookingRepository.findBookingsByBooker_IdAndItem_IdAndEndIsBefore(
+                                eq(userOleg.getId()),
+                                eq(dryer.getId()),
+                                any(LocalDateTime.class)
+                        )
+                )
+                .thenReturn(List.of(lastBooking));
+        Mockito.when(mockCommentRepository.save(any())).thenReturn(comment);
+        CommentDto realComment = itemService.createComment(userOleg.getId(), dryer.getId(), commentDto);
+
+        assertEquals(commentDto.getId(), realComment.getId());
+        assertEquals(commentDto.getAuthorName(), realComment.getAuthorName());
+        assertEquals(commentDto.getText(), realComment.getText());
+    }
 
     @Test
     void createComment_shouldThrowExceptionIfItemNotExist() {
@@ -240,6 +531,22 @@ class ItemServiceImplTest {
                         commentDto
                 )
         );
+    }
+
+    @Test
+    void delete_shouldSuccess() {
+        Item apple = new Item(5L, "Cup", "Red", true, userOleg, null);
+        Mockito
+                .when(mockItemRepository.existsById(apple.getId()))
+                .thenReturn(true);
+        Mockito
+                .when(mockUserRepository.existsById(userOleg.getId()))
+                .thenReturn(true);
+        itemService.deleteById(userOleg.getId(), apple.getId());
+
+        Mockito
+                .verify(mockItemRepository, Mockito.times(1))
+                .deleteById(apple.getId());
     }
 
     @Test

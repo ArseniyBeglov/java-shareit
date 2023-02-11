@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingIdAndBookerId;
 import ru.practicum.shareit.item.comments.CommentDto;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ItemMapperImpl implements ItemMapper {
 
     private final UserMapper userMapper;
@@ -31,9 +32,10 @@ public class ItemMapperImpl implements ItemMapper {
 
     @Override
     public Item fromDtoInput(ItemDtoInput itemDto, User owner, ItemRequest itemRequest) {
-        return new Item(itemDto.getId(), itemDto.getName(),
+        Item item = new Item(itemDto.getId(), itemDto.getName(),
                 itemDto.getDescription(), itemDto.getAvailable(),
                 owner, itemRequest);
+        return item;
     }
 
     @Override
@@ -49,11 +51,12 @@ public class ItemMapperImpl implements ItemMapper {
     @Override
     public List<ItemDtoRequests> toDtoListForRequest(List<Item> items) {
         return items.stream()
-                .map(ItemMapperImpl::toDtoForRequest)
+                .map(this::toDtoForRequest)
                 .collect(Collectors.toList());
     }
 
-    public static ItemDtoRequests toDtoForRequest(Item item) {
+    @Override
+    public ItemDtoRequests toDtoForRequest(Item item) {
         return new ItemDtoRequests(item.getId(), item.getName(),
                 item.getDescription(), item.getAvailable(), item.getRequest().getId());
     }

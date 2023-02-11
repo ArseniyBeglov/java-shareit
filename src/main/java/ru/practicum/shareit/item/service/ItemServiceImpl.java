@@ -7,23 +7,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingIdAndBookerId;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.dto.BookingMapperImpl;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.model.exception.CommentAccessException;
 import ru.practicum.shareit.booking.model.exception.NotFoundException;
-import ru.practicum.shareit.item.comments.Comment;
-import ru.practicum.shareit.item.comments.CommentDto;
-import ru.practicum.shareit.item.comments.CommentMapper;
-import ru.practicum.shareit.item.comments.CommentRepository;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoBookingAndComments;
-import ru.practicum.shareit.item.dto.ItemDtoInput;
-import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.comments.*;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dto.UserMapperImpl;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import javax.transaction.Transactional;
@@ -45,9 +41,9 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
-    private final ItemMapper itemMapper;
-    private final CommentMapper commentMapper;
-    private final BookingMapper bookingMapper;
+    private final ItemMapper itemMapper = new ItemMapperImpl(new UserMapperImpl());
+    private final CommentMapper commentMapper = new CommentMapperImpl();
+    private final BookingMapper bookingMapper = new BookingMapperImpl();
     private final ItemRequestRepository itemRequestRepository;
 
     @Override
@@ -107,7 +103,8 @@ public class ItemServiceImpl implements ItemService {
                 sharerId, itemDto.getId(), itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable());
         User owner = userRepository.findById(sharerId)
                 .orElseThrow(() ->
-                        new NotFoundException("User with id = " + sharerId + " is not found"));
+                        new NotFoundException("User with id = " + sharerId + " not found"));
+
         Long requestId = itemDto.getRequestId();
         ItemRequest itemRequest = null;
 
@@ -116,8 +113,8 @@ public class ItemServiceImpl implements ItemService {
                     .orElseThrow(() ->
                             new NotFoundException("This itemRequest not be found"));
         }
+        // ItemMapper itemMapper1 = new ItemMapperImpl(new UserMapperImpl());
         Item item = itemMapper.fromDtoInput(itemDto, owner, itemRequest);
-        item.setOwner(owner);
 
         return itemMapper.toDto(itemRepository.save(item));
     }

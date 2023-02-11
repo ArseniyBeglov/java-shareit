@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.user.User;
 
 
-class UserDtoConverterTest {
+class UserDtoMapperTest {
 
     @Test
     void toDto() {

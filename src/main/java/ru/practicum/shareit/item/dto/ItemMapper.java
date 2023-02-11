@@ -19,4 +19,6 @@ public interface ItemMapper {
                                                           List<CommentDto> comments);
 
     List<ItemDtoRequests> toDtoListForRequest(List<Item> items);
+
+    ItemDtoRequests toDtoForRequest(Item item);
 }

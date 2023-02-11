@@ -109,8 +109,11 @@ public class BookingServiceImpl implements BookingService {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("User with this id is not found");
         }
-        if (from < 0 || size <= 0) {
-            throw new ValidateException("not positive");
+        if (size <= 0) {
+            throw new ValidateException("size is not positive");
+        }
+        if (from < 0) {
+            throw new ValidateException("from is not positive");
         }
         return sortByState(state, userId, "user", from, size).stream().map(bookingMapper::toOutputDto)
                 .collect(Collectors.toList());
@@ -121,8 +124,11 @@ public class BookingServiceImpl implements BookingService {
         if (!userRepository.existsById(ownerId)) {
             throw new NotFoundException("User with this id is not found");
         }
-        if (from < 0 || size <= 0) {
-            throw new ValidateException("not positive");
+        if (size <= 0) {
+            throw new ValidateException("size is not positive");
+        }
+        if (from < 0) {
+            throw new ValidateException("from is not positive");
         }
         return sortByState(state, ownerId, "owner", from, size).stream().map(bookingMapper::toOutputDto)
                 .collect(Collectors.toList());

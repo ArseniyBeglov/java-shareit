@@ -13,9 +13,11 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestDtoMapper;
+import ru.practicum.shareit.request.dto.ItemRequestDtoMapperImpl;
 import ru.practicum.shareit.request.dto.ItemRequestOutput;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dto.UserMapperImpl;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -34,8 +36,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemRequestRepository itemRequestRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
-    private final ItemRequestDtoMapper itemRequestDtoMapper;
-    private final ItemMapper itemMapper;
+    private final ItemRequestDtoMapper itemRequestDtoMapper = new ItemRequestDtoMapperImpl();
+    private final ItemMapper itemMapper = new ItemMapperImpl(new UserMapperImpl());
 
     @Override
     public List<ItemRequestOutput> getAll(long requestorId) {
@@ -95,7 +97,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         for (ItemRequest itemRequest : requests) {
             List<Item> itemsTemp = itemRequestsByItem.getOrDefault(itemRequest, new ArrayList<>());
             List<ItemDtoRequests> itemDtoForRequests = itemsTemp.stream()
-                    .map(ItemMapperImpl::toDtoForRequest)
+                    .map(itemMapper::toDtoForRequest)
                     .collect(toList());
             itemRequestOutputs.add(itemRequestDtoMapper.toDtoOutput(itemRequest, itemDtoForRequests));
         }
