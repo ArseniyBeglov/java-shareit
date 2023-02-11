@@ -566,6 +566,7 @@ class ItemServiceImplTest {
                 )
                 .thenReturn(Collections.emptyList());
 
+
         assertThrows(
                 CommentAccessException.class,
                 () -> itemService.createComment(userOleg.getId(), dryer.getId(), commentDto)
