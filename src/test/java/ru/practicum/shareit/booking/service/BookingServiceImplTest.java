@@ -11,10 +11,10 @@ import ru.practicum.shareit.booking.State;
 import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingDtoInput;
 import ru.practicum.shareit.booking.dto.BookingDtoOutput;
-import ru.practicum.shareit.booking.model.exception.AccessException;
-import ru.practicum.shareit.booking.model.exception.NotFoundException;
-import ru.practicum.shareit.booking.model.exception.TimeException;
-import ru.practicum.shareit.booking.model.exception.UnknownStateException;
+import ru.practicum.shareit.exception.AccessException;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.TimeException;
+import ru.practicum.shareit.exception.UnknownStateException;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking.model.exception;
+package ru.practicum.shareit.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
