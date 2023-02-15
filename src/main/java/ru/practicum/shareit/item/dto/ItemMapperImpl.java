@@ -1,55 +1,63 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingIdAndBookerId;
 import ru.practicum.shareit.item.comments.CommentDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.dto.ItemRequestDtoMapper;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserMapper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ItemMapperImpl implements ItemMapper {
 
-    private final UserMapper userDtoConverter;
-    private final ItemRequestDtoMapper itemRequestDtoConverter;
+    private final UserMapper userMapper;
+
 
     @Override
     public ItemDto toDto(Item item) {
         return new ItemDto(item.getId(), item.getName(),
                 item.getDescription(), item.getAvailable(),
-                userDtoConverter.toDto(item.getOwner()),
+                userMapper.toDto(item.getOwner()),
                 item.getRequest() == null ? null :
-                        itemRequestDtoConverter.toDto(item.getRequest()));
+                        item.getRequest().getId());
     }
+
 
     @Override
-    public Item fromDto(ItemDto itemDto, User owner) {
-        return new Item(itemDto.getId(), itemDto.getName(),
+    public Item fromDtoInput(ItemDtoInput itemDto, User owner, ItemRequest itemRequest) {
+        Item item = new Item(itemDto.getId(), itemDto.getName(),
                 itemDto.getDescription(), itemDto.getAvailable(),
-                owner, itemDto.getRequest() == null ?
-                null : itemRequestDtoConverter.fromDto(itemDto.getRequest()));
+                owner, itemRequest);
+        return item;
     }
-
-    @Override
-    public Item fromDtoInput(ItemDtoInput itemDto, User owner) {
-        return new Item(itemDto.getId(), itemDto.getName(),
-                itemDto.getDescription(), itemDto.getAvailable(),
-                owner, null);
-    }
-
 
     @Override
     public ItemDtoBookingAndComments toDtoWithBookingAndComments(Item item,
-                                                                     BookingIdAndBookerId lastBooking,
-                                                                     BookingIdAndBookerId nextBooking,
-                                                                     List<CommentDto> comments) {
+                                                                 BookingIdAndBookerId lastBooking,
+                                                                 BookingIdAndBookerId nextBooking,
+                                                                 List<CommentDto> comments) {
         return new ItemDtoBookingAndComments(item.getId(), item.getName(),
                 item.getDescription(), item.getAvailable(),
                 lastBooking, nextBooking, comments);
+    }
+
+    @Override
+    public List<ItemDtoRequests> toDtoListForRequest(List<Item> items) {
+        return items.stream()
+                .map(this::toDtoForRequest)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ItemDtoRequests toDtoForRequest(Item item) {
+        return new ItemDtoRequests(item.getId(), item.getName(),
+                item.getDescription(), item.getAvailable(), item.getRequest().getId());
     }
 }

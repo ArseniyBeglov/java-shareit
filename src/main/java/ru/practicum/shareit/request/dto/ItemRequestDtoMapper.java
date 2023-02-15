@@ -1,10 +1,14 @@
 package ru.practicum.shareit.request.dto;
 
+import ru.practicum.shareit.item.dto.ItemDtoRequests;
 import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.user.User;
+
+import java.util.List;
 
 public interface ItemRequestDtoMapper {
 
-    ItemRequestDto toDto(ItemRequest itemRequest);
+    ItemRequestOutput toDtoOutput(ItemRequest itemRequest, List<ItemDtoRequests> items);
 
-    ItemRequest fromDto(ItemRequestDto itemRequestDto);
+    ItemRequest fromDtoInput(ItemRequestDto itemRequest, User owner);
 }
