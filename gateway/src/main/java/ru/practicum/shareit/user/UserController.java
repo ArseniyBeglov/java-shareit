@@ -15,7 +15,7 @@ import static org.springframework.http.RequestEntity.delete;
 @RequestMapping(path = "/users")
 public class UserController {
 
-    private final main.java.ru.practicum.shareit.user.UserClient userClient;
+    private final UserClient userClient;
 
     @GetMapping
     public ResponseEntity<Object> getAll() {
